@@ -8,6 +8,8 @@ import 'firebase/compat/firestore';
 import { getFirestore } from 'firebase/firestore';
 import StyledFirebaseAuth from '../components/StyledFirebaseAuth.tsx';
 
+import '../SignInScreen.css';
+
 // Import additional authentication provider
 import { GoogleAuthProvider, EmailAuthProvider } from 'firebase/auth';
 
@@ -45,9 +47,10 @@ export const db = getFirestore();
 // Export FirebaseUI signin screen
 export function SignInScreen() {
   return (
-    <div>
-      <h1>Sign in</h1>
+    <div className="signin-container">
+      <h1 className="signin-title">Welcome Back!</h1>
       <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
+      <p className="signin-footer">Sign in to manage your entries.</p>
     </div>
   );
 }

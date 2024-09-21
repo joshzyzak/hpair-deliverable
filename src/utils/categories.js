@@ -8,5 +8,6 @@ export const categories = [
 ];
 
 export function getCategory(category_id) {
-   return categories.find(x => x.id === category_id)
+   const category = categories.find(x => x.id === category_id);
+   return category ? category : { id: -1, name: "Unknown" }; // Default case
 }

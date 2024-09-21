@@ -10,12 +10,12 @@ import MuiDrawer from '@mui/material/Drawer';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
-import Stack from "@mui/material/Stack";
+import Stack from '@mui/material/Stack';
 import { createTheme, styled, ThemeProvider } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import firebase from 'firebase/compat/app';
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import './App.css';
 import BasicTable from './components/BasicTable';
 import EntryModal from './components/EntryModal';
@@ -24,7 +24,6 @@ import { SignInScreen } from './utils/READONLY_firebase';
 import { emptyEntry, subscribeToEntries } from './utils/mutations';
 
 // MUI styling constants
-
 const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar, {
@@ -71,27 +70,27 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
-const mdTheme = createTheme({
-  palette: {
-    primary: {
-      main: '#770312',
-    },
-    secondary: {
-      main: '#fff',
-    },
-  },
-});
-
-// App.js is the homepage and handles top-level functions like user auth.
-
 export default function App() {
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [currentUser, setcurrentUser] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
-  // User authentication functionality. Would not recommend changing.
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
 
-  const [isSignedIn, setIsSignedIn] = useState(false); // Local signed-in state.
-  const [currentUser, setcurrentUser] = useState(null); // Local user info
+  const mdTheme = createTheme({
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+      primary: {
+        main: '#770312',
+      },
+      secondary: {
+        main: '#fff',
+      },
+    },
+  });
 
-  // Listen to the Firebase Auth state and set the local state.
   useEffect(() => {
     const unregisterAuthObserver = firebase.auth().onAuthStateChanged(user => {
       setIsSignedIn(!!user);
@@ -99,31 +98,22 @@ export default function App() {
         setcurrentUser(user);
       }
     });
-    return () => unregisterAuthObserver(); // Make sure we un-register Firebase observers when the component unmounts.
+    return () => unregisterAuthObserver();
   }, []);
-
-  // Navbar drawer functionality
 
   const [open, setOpen] = useState(true);
   const toggleDrawer = () => {
-    setOpen(open);
+    setOpen(!open);
   };
-
-  // Data fetching from DB. Would not recommend changing.
-  // Reference video for snapshot functionality https://www.youtube.com/watch?v=ig91zc-ERSE
 
   const [entries, setEntries] = useState([]);
 
   useEffect(() => {
     if (!currentUser) {
-       return;
+      return;
     }
-
     subscribeToEntries(currentUser.uid, setEntries);
- 
- }, [currentUser]);
-
-  // Main content of homescreen. This is displayed conditionally from user auth status
+  }, [currentUser]);
 
   function mainContent() {
     if (isSignedIn) {
@@ -138,67 +128,61 @@ export default function App() {
             <BasicTable entries={entries} />
           </Grid>
         </Grid>
-      )
-    } else return (
-      <SignInScreen></SignInScreen>
-    )
+      );
+    } else return <SignInScreen />;
   }
 
   const MenuBar = () => {
-    return(
-    <AppBar position="absolute" open={open}>
-          <Toolbar
+    return (
+      <AppBar position="absolute" open={open}>
+        <Toolbar sx={{ pr: '24px' }}>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="open drawer"
+            onClick={toggleDrawer}
+            sx={{ marginRight: '36px', ...(open && { display: 'none' }) }}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
+            Speaker Outreach
+          </Typography>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={toggleDarkMode}
+            sx={{ margin: '0 10px' }}
+          >
+            Switch to {darkMode ? 'Light' : 'Dark'} Mode
+          </Button>
+          <Typography
+            component="h1"
+            variant="body1"
+            color="inherit"
+            noWrap
             sx={{
-              pr: '24px', // keep right padding when drawer closed
+              display: isSignedIn ? 'inline' : 'none',
+              margin: '0 10px',
             }}
           >
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
-              onClick={toggleDrawer}
-              sx={{
-                marginRight: '36px',
-                ...(open && { display: 'none' }),
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography
-              component="h1"
-              variant="h6"
-              color="inherit"
-              noWrap
-              sx={{ flexGrow: 1 }}
-            >
-              Speaker Outreach
-            </Typography>
-            <Typography
-              component="h1"
-              variant="body1"
-              color="inherit"
-              noWrap
-              sx={{
-                marginRight: '20px',
-                display: isSignedIn ? 'inline' : 'none'
-              }}
-            >
-              Signed in as {firebase.auth().currentUser?.displayName}
-            </Typography>
-            <Button variant="contained" size="small"
-              sx={{
-                marginTop: '5px',
-                marginBottom: '5px',
-                display: isSignedIn ? 'inline' : 'none'
-              }}
-              onClick={() => firebase.auth().signOut()}
-            >
-              Log out
-            </Button>
-          </Toolbar>
-        </AppBar>
-    )
-  }
+            Signed in as {firebase.auth().currentUser?.displayName}
+          </Typography>
+          <Button
+            variant="contained"
+            size="small"
+            sx={{
+              margin: '0 10px',
+              display: isSignedIn ? 'inline' : 'none',
+            }}
+            onClick={() => firebase.auth().signOut()}
+          >
+            Log out
+          </Button>
+        </Toolbar>
+      </AppBar>
+    );
+  };
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -219,9 +203,7 @@ export default function App() {
             </IconButton>
           </Toolbar>
           <Divider />
-          <List component="nav">
-            {mainListItems}
-          </List>
+          <List component="nav">{mainListItems}</List>
         </Drawer>
         <Box
           component="main"
